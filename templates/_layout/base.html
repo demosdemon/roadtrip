@@ -1,3 +1,4 @@
+{{- define "scripts" }}{{ end -}}
 <!doctype html>
 <html lang="en">
 <head>
@@ -37,11 +38,10 @@
 <!-- Icons -->
 <script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script>
 
-<!-- Google Maps -->
-<script src="https://maps.googleapis.com/maps/api/js?key={{ env "GOOGLE_MAPS_API_KEY" }}&callback=initMap" async
-        defer></script>
 <script>
     feather.replace()
 </script>
+
+{{ template "scripts" .}}
 </body>
 </html>

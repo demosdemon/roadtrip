@@ -2,12 +2,10 @@ package venv
 
 import (
 	"bufio"
-	"errors"
+	"github.com/spf13/afero"
+	"log"
 	"os"
 	"path"
-	"syscall"
-
-	"github.com/spf13/afero"
 
 	"github.com/demosdemon/roadtrip/pkg/utils"
 	"github.com/demosdemon/roadtrip/pkg/utils/venv/mapping"
@@ -15,8 +13,6 @@ import (
 )
 
 var (
-	ErrCrossedDeviceBoundary = errors.New("crossed device boundary")
-
 	DefaultEnvironmentProvider EnvironmentProvider = passthru.Provider{}
 )
 
@@ -41,14 +37,18 @@ func CloneEnvironment(in EnvironmentProvider) (out EnvironmentProvider) {
 func ReadDotEnv(fs afero.Fs, p EnvironmentProvider) error {
 	fp, err := locateDotEnv(fs)
 	if err != nil {
+		log.Printf("did not find a .env file: %v", err)
 		return err
 	}
+
+	log.Printf("found .env file at %s", fp.Name())
 
 	defer fp.Close()
 
 	scanner := bufio.NewScanner(fp)
 	for scanner.Scan() {
 		k, _, v := utils.PartitionString(scanner.Text(), "=")
+		log.Printf("adding key %s to environment", k)
 		_ = p.Setenv(k, v)
 	}
 
@@ -56,18 +56,7 @@ func ReadDotEnv(fs afero.Fs, p EnvironmentProvider) error {
 }
 
 func locateDotEnv(fs afero.Fs) (afero.File, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-
-	cwdInfo, err := fs.Stat(cwd)
-	if err != nil {
-		return nil, err
-	}
-
-	statObj, checkDevice := cwdInfo.Sys().(*syscall.Stat_t)
-
+	cwd := "/"
 	for {
 		dotenv := path.Join(cwd, ".env")
 		fp, err := fs.Open(dotenv)
@@ -84,24 +73,5 @@ func locateDotEnv(fs afero.Fs) (afero.File, error) {
 		}
 
 		cwd = path.Dir(cwd)
-		if checkDevice {
-			info, err := fs.Stat(cwd)
-			if err != nil {
-				return nil, err
-			}
-
-			if parentStatObj, ok := info.Sys().(*syscall.Stat_t); ok {
-				if parentStatObj.Dev == statObj.Dev {
-					continue
-				}
-
-				err := os.PathError{
-					Op:   "locateDotEnv",
-					Path: cwd,
-					Err:  ErrCrossedDeviceBoundary,
-				}
-				return nil, &err
-			}
-		}
 	}
 }

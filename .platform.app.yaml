@@ -1,0 +1,29 @@
+name: app
+type: golang:1.12
+disk: 256
+
+hooks:
+  build: |
+    set -eux
+    go build -v -a -ldflags '-s -w -extldflags "-static"'
+
+web:
+  upstream:
+    socket_family: unix
+    protocol: http
+  commands:
+    start: |
+      declare -a xargs
+
+      if [ "$PLATFORM_BRANCH" != "master" ]; then
+        xargs+=("-debug")
+      fi
+
+      ./roadtrip "${xargs[@]}"
+  locations:
+    /:
+      passthru: true
+    /static:
+      root: static
+      passthru: true  # for custom 404
+      expires: 1M # this is fine since we use the md5hash in a query string

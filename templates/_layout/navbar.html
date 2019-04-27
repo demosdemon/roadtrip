@@ -1,4 +1,12 @@
 <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
     <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="/">RoadTrip™</a>
-    <input class="form-control form-control-dark mr-1" type="text" placeholder="Search" aria-label="Search" id="search">
+    <div class="input-group">
+        <input class="form-control form-control-dark" type="text" placeholder="Search" aria-label="Search" id="search">
+        <div class="input-group-append">
+            <button class="btn btn-secondary" type="button" id="btn-locate-me">
+                <span data-feather="crosshair"></span>
+                <span class="sr-only">Locate Me</span>
+            </button>
+        </div>
+    </div>
 </nav>

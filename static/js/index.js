@@ -12,6 +12,21 @@ function updateMarker() {
         console.log("position_changed");
         console.log(`lat: ${pos.lat()}, lng: ${pos.lng()}`);
         // TODO: send position to backend
+
+        $.ajax({
+            url: "/location",
+            method: "POST",
+            data: {
+                lat: pos.lat(),
+                lng: pos.lng(),
+            },
+        }).done(function (data) {
+            console.log("result");
+            console.dir(data);
+        }).fail(function (e) {
+            console.log("error");
+            console.dir(e);
+        });
     }
 }
 

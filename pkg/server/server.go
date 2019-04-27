@@ -59,6 +59,20 @@ func (s *Server) Handler() (http.Handler, error) {
 
 	engine.GET("/", s.index)
 	engine.StaticFS("/static", s.static())
+	engine.POST("/location", func(c *gin.Context) {
+		var input struct {
+			Latitude  float64 `form:"lat" json:"lat" xml:"Latitude" binding:"required"`
+			Longitude float64 `form:"lng" json:"lng" xml:"Longitude" binding:"required"`
+		}
+
+		err := c.Bind(&input)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+
+		c.JSON(http.StatusAccepted, input)
+	})
 	return engine, nil
 }
 
